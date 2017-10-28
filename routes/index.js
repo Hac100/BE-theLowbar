@@ -16,7 +16,7 @@ router.get('/', function(req, res, next) {
 
   let alerts = analyseReports(req.app.locals.dataStore);
 
-  res.render('index', { title: 'Lowbar: lowering the threat reporting bar', coords:coordstr, reports: req.app.locals.dataStore, alerts: alerts });
+  res.render('index', { title: 'Lowbar: lowering the threat reporting bar', coords:coordstr, reports: req.app.locals.dataStore, alerts: alerts});
 });
 
 router.post('/reportthreat', reportThreat)
@@ -29,8 +29,10 @@ function reportThreat(req, res, next){
 }
 
 function analyseReports(dataStore){
-  return [{threatlevel: 'high', "lat": "53.477131", "lon": "-2.254062", type: 'Suspected bomb attack' }, {threatlevel: 'medium', "lat": "53.477", "lon": "-2.253", type: 'Suspected vehicle attack' }];
-
+  let alerts = [];
+  alerts.push({threatlevel: 1, "lat": "53.477131", "lon": "-2.254062", type: 'Suspected bomb attack' });
+  alerts.push({threatlevel: 2, "lat": "53.477000", "lon": "-2.253000", type: 'Suspected vehicle attack' });
+  return alerts;
   // // We want to look for clusters of reports in a location
   
   // getDistanceFromLatLonInKm

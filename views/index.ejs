@@ -1,8 +1,7 @@
 <% include ./partials/head %>
   <% include ./partials/header %>
 
-    <body onload="initialize()">
-
+ 
       <div class="row">
         <div class="col-md-8">
           <div id="map-canvas" style="height: 600px; width: auto;">
@@ -17,15 +16,13 @@
           <h2>Reports received:</h2>
           <%  reports.forEach(function(dataRow) { %>
           <div>
-            <% let us = dataRow["userid"]; let tl =dataRow["threatlevel"]; let td = new Date(); td = Math.floor(td.getTime()/1000 - dataRow["timestamp"]); let str; td<60 ? str = td + " s " : (td<3600 ? str = Math.floor(td/60)+ " mins " : str = Math.floor(td/3600) + " hrs "); %>
-            <span class='<%= tl %>'><%= tl %>:</span>&nbsp&nbsp<span><%= us %></span>&nbsp&nbsp&nbsp<span><%= str %> ago</span>
+            <% const levels = ['low', 'medium', 'high']; let us = dataRow["userid"]; let tl =dataRow["threatlevel"]; let tlclass = levels[tl]; let td = new Date(); td = Math.floor(td.getTime()/1000 - dataRow["timestamp"]); let str; td<60 ? str = td + " s " : (td<3600 ? str = Math.floor(td/60)+ " mins " : str = Math.floor(td/3600) + " hrs "); %>
+            <span class='<%= tlclass %>'><%= tl %>:</span>&nbsp&nbsp<span><%= us %></span>&nbsp&nbsp&nbsp<span><%= str %> ago</span>
           </div>
           <% })%>
 
         </div>
       </div>
 
-
-    </body>
 
     <% include ./partials/footer %>
