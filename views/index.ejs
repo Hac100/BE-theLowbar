@@ -1,53 +1,31 @@
-<!DOCTYPE html>
-<html>
+<% include ./partials/head %>
+  <% include ./partials/header %>
 
-<head>
-  <meta http-equiv="refresh" content="5">
-  <title>
-    <%= title %>
-  </title>
-  <link rel='stylesheet' href='/stylesheets/style.css' />
-  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
-  <script type="text/javascript">
-    var points;
-    function initialize() {
-      var myLatLng = new google.maps.LatLng(53.477131, -2.254062);
-      var mapOptions = {
-        zoom: 18,
-        center: myLatLng,
-        mapTypeId: 'roadmap'
-      };
+    <body onload="initialize()">
 
-      var map = new google.maps.Map(document.getElementById('map-canvas'),
-        mapOptions);
-      var coords = <%= coords %>
+      <div class="row">
+        <div class="col-md-8">
+          <div id="map-canvas" style="height: 600px; width: auto;">
+          </div>
+        </div>
+        <div class="col-md-4">
+          <h2>Alerts:</h2>
+          <%  alerts.forEach(function(dataRow) { %>
+            <% let tl =dataRow["threatlevel"]; let tt =dataRow["type"];   %>
+              <h2 class='<%= tl %>'><%= tt %></h2>
+            <%})%>
+          <h2>Reports received:</h2>
+          <%  reports.forEach(function(dataRow) { %>
+          <div>
+            <% let us = dataRow["userid"]; let tl =dataRow["threatlevel"]; let td = new Date(); td = Math.floor(td.getTime()/1000 - dataRow["timestamp"]); let str; td<60 ? str = td + " s " : (td<3600 ? str = Math.floor(td/60)+ " mins " : str = Math.floor(td/3600) + " hrs "); %>
+            <span class='<%= tl %>'><%= tl %>:</span>&nbsp&nbsp<span><%= us %></span>&nbsp&nbsp&nbsp<span><%= str %> ago</span>
+          </div>
+          <% })%>
 
-      // Construct the polygon
-      points = new google.maps.Polygon({
-        paths: coords,
-        draggable: true,
-        editable: true,
-        strokeColor: '#FF0000',
-        strokeOpacity: 0.8,
-        strokeWeight: 2,
-        fillColor: '#FF0000',
-        fillOpacity: 0.35
-      });
-
-      points.setMap(map);
-     }
+        </div>
+      </div>
 
 
-  </script>
-</head>
+    </body>
 
-<body onload="initialize()">
-  <h1>
-    <%= title %>
-  </h1>
-  <div id="map-canvas" style="height: 600px; width: auto;">
-  </div>
-
-</body>
-
-</html>
+    <% include ./partials/footer %>

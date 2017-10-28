@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Document</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <meta http-equiv="refresh" content="5">
+    <title>
+      <%= title %>
+    </title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&key=AIzaSyCcnO8mzDl1CT-3pQDVooUKsJd_OPRgA60"></script>
+    <script type="text/javascript">
+      var points;
+      function initialize() {
+        var myLatLng = new google.maps.LatLng(53.477131, -2.254062);
+        var mapOptions = {
+          zoom: 18,
+          center: myLatLng,
+          mapTypeId: 'roadmap'
+        };
+        const levels=['low', 'medium', 'high'];
+        var map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+        var coords = <%= coords %>;
+  
+        var image = {
+          url: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png',
+          // This marker is 20 pixels wide by 32 pixels high.
+          size: new google.maps.Size(20, 32),
+          // The origin for this image is (0, 0).
+          origin: new google.maps.Point(0, 0),
+          // The anchor for this image is the base of the flagpole at (0, 32).
+          anchor: new google.maps.Point(0, 32)
+        };
+  
+        for (var i = 0; i < coords.length; i++) {
+          var coord = coords[i];
+          var marker = new google.maps.Marker({
+            position: { lat: coord[1], lng: coord[2] },
+            map: map,
+            icon: image,
+            title: levels[coord[0]],
+            zIndex: coord[3]
+          });
+        }
+      }
+  
+  
+    </script>
+  </head>
+<body> <!-- Can even take the body tag into this partial, although probably bad practice! -->

@@ -6,3 +6,19 @@ body {
 a {
   color: #00B7FF;
 }
+
+.high{
+  color: red;
+  font-weight: bold;
+}
+
+.medium{
+  color: orange;
+  font-weight: bold;
+}
+
+.low{
+  color: yellow;
+  font-weight: bold;
+}
+
