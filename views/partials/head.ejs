@@ -12,7 +12,7 @@
   <link rel='stylesheet' href='/stylesheets/style.css' />
 
   <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3.exp&key=AIzaSyCcnO8mzDl1CT-3pQDVooUKsJd_OPRgA60"></script>
-  
+
   <script type="text/javascript">
     function initialize() {
       var myLatLng = new google.maps.LatLng(53.477131, -2.254062);
@@ -23,7 +23,7 @@
       };
       const levels = ['low', 'medium', 'high'];
       var map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
-      
+
       var coords = <%= coords %>;
       var pinImageLow = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FFFF00", new google.maps.Size(21, 34), new google.maps.Point(0, 0), new google.maps.Point(10, 34));
       var pinImageMedium = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FF8800", new google.maps.Size(21, 34), new google.maps.Point(0, 0), new google.maps.Point(10, 34));
@@ -32,12 +32,12 @@
         new google.maps.Size(40, 37),
         new google.maps.Point(0, 0),
         new google.maps.Point(12, 35));
+      var bounds = new google.maps.LatLngBounds();
       for (var i = 0; i < coords.length; i++) {
         var coord = coords[i];
         var pinImage = pinImageLow;
-        console.log('coord: ', coord)
-        if (levels[+coord[0]-1] === 'high') pinImage = pinImageHigh;
-        if (levels[+coord[0]-1] === 'medium') pinImage = pinImageMedium;
+        if (levels[+coord[0] - 1] === 'high') pinImage = pinImageHigh;
+        if (levels[+coord[0] - 1] === 'medium') pinImage = pinImageMedium;
 
         var marker = new google.maps.Marker({
           position: { lat: coord[1], lng: coord[2] },
@@ -45,9 +45,15 @@
           icon: pinImage,
           shadow: pinShadow,
           title: levels[+coord[0]],
-          zIndex: 3-coord[0]
+          zIndex: 3 - coord[0]
         });
+        bounds.extend(marker.getPosition());
       }
+
+      if (coords.length > 1) {
+        map.setOptions({ maxZoom: 18 });
+        map.fitBounds(bounds);
+       }
 
       var alerts = <%- JSON.stringify(alerts) %>;
 
@@ -64,7 +70,7 @@
           icon: alertImage,
           shadow: pinShadow,
           title: levels[alert[0]],
-          zIndex: 3-alert[0]
+          zIndex: 3 - alert[0]
         });
       }
     }
