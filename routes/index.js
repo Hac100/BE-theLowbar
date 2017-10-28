@@ -38,7 +38,6 @@ function analyseReports(dataStore) {
   // Should really try automated clustering but for now let's take the reports in order and detect if they are close, start a new cluster if too big gap
   let ds = dataStore;
 
-  let ds = dataStore;
   let clusters = [];
   let clusterStart = ds[0];
   let currentCluster = [];
