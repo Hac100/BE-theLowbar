@@ -39,7 +39,7 @@ function analyseReports(dataStore) {
   let ds = dataStore;
 
   if(ds.length ===0 ) return alerts;
-  
+
   let clusters = [];
   let clusterStart = ds[0];
   let currentCluster = [];
@@ -67,7 +67,6 @@ function analyseReports(dataStore) {
   if (currentCluster.length > 0) clusters.push(currentCluster);
 
   // apply some simple rules to clusters to generate auto alerts
-console.log(clusters.length)
   for (let i = 0; i < clusters.length; i++) {
     [meanLat, meanLon, meanTL] = getClusterStats(clusters[i]);
     if (clusters[i].length >=3 && meanTL>=2) {

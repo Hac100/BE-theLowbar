@@ -12,10 +12,11 @@
   <link rel='stylesheet' href='/stylesheets/style.css' />
 
   <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3.exp&key=AIzaSyCcnO8mzDl1CT-3pQDVooUKsJd_OPRgA60"></script>
-
   <script type="text/javascript">
     function initialize() {
+      var geocoder = new google.maps.Geocoder;
       var myLatLng = new google.maps.LatLng(53.477131, -2.254062);
+
       var mapOptions = {
         zoom: 17,
         center: myLatLng,
@@ -84,6 +85,15 @@
           radius: 250
         });
 
+        geocoder.geocode({ 'location': { lat: +alert['lat'], lng: +alert['lon'] } }, function (results, status) {
+          if (status === 'OK') {
+            if (results[0]) {
+              alerts[i]['address'] = results[0].formatted_address;
+            }
+          } else {
+            console.log('Geocoder failed due to: ' + status);
+          }
+        });
       }
     }
 
