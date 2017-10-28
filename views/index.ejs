@@ -9,7 +9,7 @@
   <link rel='stylesheet' href='/stylesheets/style.css' />
   <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
   <script type="text/javascript">
-    var bermudaTriangle;
+    var points;
     function initialize() {
       var myLatLng = new google.maps.LatLng(53.477131, -2.254062);
       var mapOptions = {
@@ -20,11 +20,11 @@
 
       var map = new google.maps.Map(document.getElementById('map-canvas'),
         mapOptions);
-      var triangleCoords = <%= coords %>
+      var coords = <%= coords %>
 
       // Construct the polygon
-      bermudaTriangle = new google.maps.Polygon({
-        paths: triangleCoords,
+      points = new google.maps.Polygon({
+        paths: coords,
         draggable: true,
         editable: true,
         strokeColor: '#FF0000',
@@ -34,21 +34,14 @@
         fillOpacity: 0.35
       });
 
-      bermudaTriangle.setMap(map);
-      google.maps.event.addListener(bermudaTriangle, "dragend", getPolygonCoords);
-      google.maps.event.addListener(bermudaTriangle.getPath(), "insert_at", getPolygonCoords);
-      google.maps.event.addListener(bermudaTriangle.getPath(), "remove_at", getPolygonCoords);
-      google.maps.event.addListener(bermudaTriangle.getPath(), "set_at", getPolygonCoords);
+      points.setMap(map);
+      google.maps.event.addListener(points, "dragend", getPolygonCoords);
+      google.maps.event.addListener(points.getPath(), "insert_at", getPolygonCoords);
+      google.maps.event.addListener(points.getPath(), "remove_at", getPolygonCoords);
+      google.maps.event.addListener(points.getPath(), "set_at", getPolygonCoords);
     }
 
-    function getPolygonCoords() {
-      var len = bermudaTriangle.getPath().getLength();
-      var htmlStr = "";
-      for (var i = 0; i < len; i++) {
-        htmlStr += bermudaTriangle.getPath().getAt(i).toUrlValue(6) + "<br>";
-      }
-      document.getElementById('info').innerHTML = htmlStr;
-    }
+
   </script>
 </head>
 
