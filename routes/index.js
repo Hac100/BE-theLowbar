@@ -1,19 +1,24 @@
 var express = require('express');
 var router = express.Router();
 
-const dataStore = [];
-
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: 'Lowbar: lowering the threat reporting bar', coords: '[    new google.maps.LatLng(53.477131, -2.254062),            new google.maps.LatLng(53.477, -2.254062),            new google.maps.LatLng(53.477, -2.2530),            new google.maps.LatLng(53.477131, -2.253)   ];' });
+  let coords=[];
+  req.app.locals.dataStore.forEach(report => {
+    coords.push( `new google.maps.LatLng(${report.lat},${report.lon})`);
+  })
+  let coordstr =  '['+coords.join(',')+']';
+  console.log(coordstr)
+  //res.render('index', { title: 'Lowbar: lowering the threat reporting bar', coords: '[    new google.maps.LatLng(53.477131, -2.254062),            new google.maps.LatLng(53.477, -2.254062),            new google.maps.LatLng(53.477, -2.2530),            new google.maps.LatLng(53.477131, -2.253)   ];' });
+  res.render('index', { title: 'Lowbar: lowering the threat reporting bar', coords:coordstr });
 });
 
 router.post('/reportthreat', reportThreat)
 
 
 function reportThreat(req, res, next){
-  dataStore.push(req.body);
-  console.log(dataStore)
+  req.app.locals.dataStore.unshift(req.body); //add to front of array so most recent first
+
   res.status(200).send('Threat report logged');
 }
 
