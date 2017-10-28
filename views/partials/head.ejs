@@ -5,7 +5,7 @@
   <title>Document</title>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M"
     crossorigin="anonymous">
-  <meta http-equiv="refresh" content="30">
+  <meta http-equiv="refresh" content="3">
   <title>
     <%= title %>
   </title>
@@ -17,7 +17,7 @@
     function initialize() {
       var myLatLng = new google.maps.LatLng(53.477131, -2.254062);
       var mapOptions = {
-        zoom: 18,
+        zoom: 17,
         center: myLatLng,
         mapTypeId: 'roadmap'
       };
@@ -35,15 +35,16 @@
       for (var i = 0; i < coords.length; i++) {
         var coord = coords[i];
         var pinImage = pinImageLow;
-        if (levels[coord[0]] === 'high') pinImage = pinImageHigh;
-        if (levels[coord[0]] === 'medium') pinImage = pinImageMedium;
+        console.log('coord: ', coord)
+        if (levels[+coord[0]-1] === 'high') pinImage = pinImageHigh;
+        if (levels[+coord[0]-1] === 'medium') pinImage = pinImageMedium;
 
         var marker = new google.maps.Marker({
           position: { lat: coord[1], lng: coord[2] },
           map: map,
           icon: pinImage,
           shadow: pinShadow,
-          title: levels[coord[0]],
+          title: levels[+coord[0]],
           zIndex: 3-coord[0]
         });
       }

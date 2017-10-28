@@ -29,14 +29,37 @@ function reportThreat(req, res, next){
 }
 
 function analyseReports(dataStore){
+  // let alerts = [];
+  // alerts.push({threatlevel: 1, "lat": "53.477131", "lon": "-2.254062", type: 'Suspected bomb attack' });
+  // alerts.push({threatlevel: 2, "lat": "53.477000", "lon": "-2.253000", type: 'Suspected vehicle attack' });
+  // return alerts;
+  // // // We want to look for clusters of reports in a location
   let alerts = [];
-  alerts.push({threatlevel: 1, "lat": "53.477131", "lon": "-2.254062", type: 'Suspected bomb attack' });
-  alerts.push({threatlevel: 2, "lat": "53.477000", "lon": "-2.253000", type: 'Suspected vehicle attack' });
-  return alerts;
-  // // We want to look for clusters of reports in a location
-  
-  // getDistanceFromLatLonInKm
+  // Should really try automated clustering but for now let's take the reports in order and detect if they are close, start a new cluster if too big gap
+  let ds = dataStore;
+  let clusters = [];
+  let clusterStart = ds[0];
+  let currentCluster = [];
+  currentCluster.push(clusterStart);
+  let distThresh = 0.25;
+  for(let i = 1; i<ds.length; i++ )
+  {
+    if(getDistanceFromLatLonInKm(ds[i]['lat'], ds[i]['lon'], ds[i-1]['lat'], ds[i-1]['lon'])<distThresh)
+    {
+      currentCluster.push(ds[i]);
+    }else{
+      clusters.push(currentCluster);
+      currentCluster = [];
+      currentCluster.push(ds[i]);
+    }
+  }
+  clusters.push(currentCluster);
 
+  console.log(clusters);
+  // apply some simple rules to clusters
+
+
+  return alerts;
 }
 
 
