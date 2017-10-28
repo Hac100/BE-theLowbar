@@ -38,31 +38,64 @@ function analyseReports(dataStore) {
   // Should really try automated clustering but for now let's take the reports in order and detect if they are close, start a new cluster if too big gap
   let ds = dataStore;
 
+  if(ds.length ===0 ) return alerts;
+  
   let clusters = [];
   let clusterStart = ds[0];
   let currentCluster = [];
   currentCluster.push(clusterStart);
   let distThresh = 0.25;
-  for(let i = 1; i<ds.length; i++ )
-  {
-    if(getDistanceFromLatLonInKm(ds[i]['lat'], ds[i]['lon'], ds[i-1]['lat'], ds[i-1]['lon'])<distThresh)
-    {
+  for (let i = 1; i < ds.length; i++) {
+    if (getDistanceFromLatLonInKm(ds[i]['lat'], ds[i]['lon'], ds[i - 1]['lat'], ds[i - 1]['lon']) < distThresh) {
       currentCluster.push(ds[i]);
-    }else{
-      clusters.push(currentCluster);
+    } else {
+      // if (currentCluster.length === 1) {
+      //   //if it's singleton, try to add to any cluster within distThresh (this isn't the best way to cluster of course!)
+      //   for (let j = 0; j < clusters.length; j++) {
+      //     [mnLat, mnLon] = getClusterStats(clusters[j]);
+      //     if (getDistanceFromLatLonInKm(currentCluster[0]['lat'], currentCluster[0]['lon'], mnLat, mnLon) < distThresh) {
+      //       clusters[j].push(currentCluster);
+      //       break;
+      //     }
+      //   }
+      // }
+      if(currentCluster.length>0)  clusters.push(currentCluster);
       currentCluster = [];
       currentCluster.push(ds[i]);
     }
   }
-  clusters.push(currentCluster);
+  if (currentCluster.length > 0) clusters.push(currentCluster);
 
-  console.log(clusters);
-  // apply some simple rules to clusters
-
+  // apply some simple rules to clusters to generate auto alerts
+console.log(clusters.length)
+  for (let i = 0; i < clusters.length; i++) {
+    [meanLat, meanLon, meanTL] = getClusterStats(clusters[i]);
+    if (clusters[i].length >=3 && meanTL>=2) {
+      alerts.push({ threatlevel: meanTL, "lat": meanLat, "lon": meanLon, type: clusters[i].length.toString() + ' HIGH THREAT reports in this location' });
+    }else if (clusters[i].length > 5 && meanTL >=1) {
+      alerts.push({ threatlevel: meanTL, "lat": meanLat, "lon": meanLon, type: clusters[i].length.toString() + ' MEDIUM/HIGH reports in this location' });
+    }
+  }
 
   return alerts;
 }
 
+function getClusterStats(cluster) {
+  let threatscores = { 'high': 2, 'medium': 1, 'low': 0 };
+  let meanLat = 0;
+  let meanLon = 0;
+  let meanTL = 0;
+  for (let j = 0; j < cluster.length; j++) {
+    meanLat += +cluster[j]['lat'];
+    meanLon += +cluster[j]['lon'];
+    meanTL += +threatscores[cluster[j]['threatlevel']];
+  }
+  console.log(meanLat, meanLon, meanTL)
+  meanLat /= cluster.length;
+  meanLon /= cluster.length;
+  meanTL =Math.round(meanTL / cluster.length + 1);
+  return [meanLat, meanLon, meanTL];
+}
 
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
   var R = 6371; // Radius of the earth in km

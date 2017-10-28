@@ -53,7 +53,7 @@
       if (coords.length > 1) {
         map.setOptions({ maxZoom: 18 });
         map.fitBounds(bounds);
-       }
+      }
 
       var alerts = <%- JSON.stringify(alerts) %>;
 
@@ -72,6 +72,18 @@
           title: levels[alert[0]],
           zIndex: 3 - alert[0]
         });
+
+        var circle = new google.maps.Circle({
+          strokeColor: '#FF0000',
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          fillColor: '#FF0000',
+          fillOpacity: 0.35,
+          map: map,
+          center: { lat: +alert['lat'], lng: +alert['lon'] },
+          radius: 250
+        });
+
       }
     }
 
