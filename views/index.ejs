@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="refresh" content="5">
+  <title>
+    <%= title %>
+  </title>
+  <link rel='stylesheet' href='/stylesheets/style.css' />
+  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+  <script type="text/javascript">
+    var bermudaTriangle;
+    function initialize() {
+      var myLatLng = new google.maps.LatLng(53.477131, -2.254062);
+      var mapOptions = {
+        zoom: 18,
+        center: myLatLng,
+        mapTypeId: 'roadmap'
+      };
+
+      var map = new google.maps.Map(document.getElementById('map-canvas'),
+        mapOptions);
+      var triangleCoords = <%= coords %>
+
+      // Construct the polygon
+      bermudaTriangle = new google.maps.Polygon({
+        paths: triangleCoords,
+        draggable: true,
+        editable: true,
+        strokeColor: '#FF0000',
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: '#FF0000',
+        fillOpacity: 0.35
+      });
+
+      bermudaTriangle.setMap(map);
+      google.maps.event.addListener(bermudaTriangle, "dragend", getPolygonCoords);
+      google.maps.event.addListener(bermudaTriangle.getPath(), "insert_at", getPolygonCoords);
+      google.maps.event.addListener(bermudaTriangle.getPath(), "remove_at", getPolygonCoords);
+      google.maps.event.addListener(bermudaTriangle.getPath(), "set_at", getPolygonCoords);
+    }
+
+    function getPolygonCoords() {
+      var len = bermudaTriangle.getPath().getLength();
+      var htmlStr = "";
+      for (var i = 0; i < len; i++) {
+        htmlStr += bermudaTriangle.getPath().getAt(i).toUrlValue(6) + "<br>";
+      }
+      document.getElementById('info').innerHTML = htmlStr;
+    }
+  </script>
+</head>
+
+<body onload="initialize()">
+  <h1>
+    <%= title %>
+  </h1>
+  <div>
+    <h2>Please drag and resize the polygon to select desired area </h2>
+  </div>
+  <div id="map-canvas" style="height: 600px; width: auto;">
+  </div>
+  <div>Selected Polygon Co-ordinates are as below </div>
+  <div id="info" style="position: absolute; font-family: Arial; font-size: 14px;">
+  </div>
+</body>
+
+</html>
