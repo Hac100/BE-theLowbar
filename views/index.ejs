@@ -1,29 +1,145 @@
-<% include ./partials/head %>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Document</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M"
+    crossorigin="anonymous">
+  <!-- <meta http-equiv="refresh" content="3"> -->
+  <title>
+    <%= title %>
+  </title>
+  <link rel='stylesheet' href='/stylesheets/style.css' />
+
+  <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3.exp&key=AIzaSyCcnO8mzDl1CT-3pQDVooUKsJd_OPRgA60"></script>
+  <script type="text/javascript">
+    function initialize() {
+
+      var myLatLng = new google.maps.LatLng(53.477131, -2.254062);
+
+      var mapOptions = {
+        zoom: 17,
+        center: myLatLng,
+        mapTypeId: 'roadmap'
+      };
+      const levels = ['low', 'medium', 'high'];
+      var map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+
+      var coords = <%= coords %>;
+      var pinImageLow = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FFFF00", new google.maps.Size(21, 34), new google.maps.Point(0, 0), new google.maps.Point(10, 34));
+      var pinImageMedium = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FF8800", new google.maps.Size(21, 34), new google.maps.Point(0, 0), new google.maps.Point(10, 34));
+      var pinImageHigh = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FF0000", new google.maps.Size(21, 34), new google.maps.Point(0, 0), new google.maps.Point(10, 34));
+      var pinShadow = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_shadow",
+        new google.maps.Size(40, 37),
+        new google.maps.Point(0, 0),
+        new google.maps.Point(12, 35));
+      var bounds = new google.maps.LatLngBounds();
+      for (var i = 0; i < coords.length; i++) {
+        var coord = coords[i];
+        var pinImage = pinImageLow;
+        if (levels[+coord[0] - 1] === 'high') pinImage = pinImageHigh;
+        if (levels[+coord[0] - 1] === 'medium') pinImage = pinImageMedium;
+
+        var marker = new google.maps.Marker({
+          position: { lat: coord[1], lng: coord[2] },
+          map: map,
+          icon: pinImage,
+          shadow: pinShadow,
+          title: levels[+coord[0]],
+          zIndex: 3 - coord[0]
+        });
+        bounds.extend(marker.getPosition());
+      }
+
+      if (coords.length > 1) {
+        map.setOptions({ maxZoom: 18 });
+        map.fitBounds(bounds);
+      }
+
+      var alerts = <%- JSON.stringify(alerts) %>;
+
+      for (var i = 0; i < alerts.length; i++) {
+        var alert = alerts[i];
+        var alertImage = pinImageLow;
+        if (levels[alert['threatlevel']] === 'high') alertImage = pinImageHigh;
+        if (levels[alert['threatlevel']] === 'medium') alertImage = pinImageMedium;
+
+        var marker = new google.maps.Marker({
+          position: { lat: +alert['lat'], lng: +alert['lon'] },
+          map: map,
+          animation: google.maps.Animation.BOUNCE,
+          icon: alertImage,
+          shadow: pinShadow,
+          title: levels[alert[0]],
+          zIndex: 3 - alert[0]
+        });
+
+        var circle = new google.maps.Circle({
+          strokeColor: '#FF0000',
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          fillColor: '#FF0000',
+          fillOpacity: 0.35,
+          map: map,
+          center: { lat: +alert['lat'], lng: +alert['lon'] },
+          radius: 250
+        });
+        addressLookup(+alert['lat'], +alert['lon'], i);
+      }
+
+    }
+
+    let address = '';
+    function addressLookup(lat, lon, index) {
+      //document.getElementById('address').innerHTML='here';
+      var geocoder = new google.maps.Geocoder;
+      geocoder.geocode({ 'location': { lat: lat, lng: lon } }, function (results, status) {
+        if (status === 'OK') {
+          if (results[0]) {
+            console.log('address' + index)
+            document.getElementById('address' + index).innerHTML = results[0].formatted_address;
+          }
+        }
+      });
+    }
+
+  </script>
+</head>
+
+<body onload="initialize()">
   <% include ./partials/header %>
 
- 
-      <div class="row">
-        <div class="col-md-8">
-          <div id="map-canvas" style="height: 600px; width: auto;">
-          </div>
+    <div class="row">
+      <div class="col-md-8">
+        <div id="map-canvas" style="height: 600px; width: auto;">
         </div>
-        <div class="col-md-4">
-          <h2>Alerts:</h2>
-          <%  alerts.forEach(function(dataRow) { %>
-            <% const levels = ['low', 'medium', 'high']; let tl =dataRow["threatlevel"];  let tlclass = levels[tl]; let tt =dataRow["type"];  let address = dataRow["address"]   %>
-              <h2 class='<%= tlclass %>'><%= tt %></h2>
-              <p><%= address %></p>
-            <%})%>
-          <h2>Reports received:</h2>
-          <%  reports.forEach(function(dataRow) { %>
-          <div>
-            <% let us = dataRow["userid"];let tl =dataRow["threatlevel"]; let td = new Date(); td = Math.floor(td.getTime()/1000 - dataRow["timestamp"]/1000); let str; td<60 ? str = td + " s " : (td<3600 ? str = Math.floor(td/60)+ " mins " : str = Math.floor(td/3600) + " hrs "); %>
-            <span class='<%= tl %>'><%= tl %>:</span>&nbsp&nbsp<span><%= us %></span>&nbsp&nbsp&nbsp<span><%= str %> ago</span>
-          </div>
-          <% })%>
+      </div>
+      <div class="col-md-4">
+        <h2>Alerts:</h2>
+        <%  alerts.forEach(function(dataRow, index) { %>
+          <% const levels = ['low', 'medium', 'high']; let tl =dataRow["threatlevel"];  let tlclass = levels[tl]; let tt =dataRow["type"]; %>
+            <h2 class='<%= tlclass %>'>
+              <%= tt %>
+            </h2>
+            <div id="address<%= index %>"></div>
+              <%})%>
+              <hr/>
+                <h2>Recent reports:</h2>
+                <%  reports.forEach(function(dataRow) { %>
+                  <div>
+                    <% let us = dataRow["userid"];let tl =dataRow["threatlevel"]; let td = new Date(); td = Math.floor(td.getTime()/1000 - dataRow["timestamp"]/1000); let str; td<60 ? str = td + " s " : (td<3600 ? str = Math.floor(td/60)+ " mins " : str = Math.floor(td/3600) + " hrs "); %>
+                      <span class='<%= tl %>'>
+                        <%= tl %>:</span>&nbsp&nbsp
+                      <span>
+                        <%= us %>
+                      </span>&nbsp&nbsp&nbsp
+                      <span>
+                        <%= str %> ago</span>
+                  </div>
+                  <% })%>
 
-        </div>
+            </div>
       </div>
 
 
-    <% include ./partials/footer %>
+      <% include ./partials/footer %>

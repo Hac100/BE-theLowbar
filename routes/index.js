@@ -70,9 +70,9 @@ function analyseReports(dataStore) {
   for (let i = 0; i < clusters.length; i++) {
     [meanLat, meanLon, meanTL] = getClusterStats(clusters[i]);
     if (clusters[i].length >=3 && meanTL>=2) {
-      alerts.push({ threatlevel: meanTL, "lat": meanLat, "lon": meanLon, type: clusters[i].length.toString() + ' HIGH THREAT reports in this location' });
+      alerts.push({ threatlevel: meanTL, "lat": meanLat, "lon": meanLon, type: clusters[i].length.toString() + ' HIGH THREAT reports near' });
     }else if (clusters[i].length > 5 && meanTL >=1) {
-      alerts.push({ threatlevel: meanTL, "lat": meanLat, "lon": meanLon, type: clusters[i].length.toString() + ' MEDIUM/HIGH reports in this location' });
+      alerts.push({ threatlevel: meanTL, "lat": meanLat, "lon": meanLon, type: clusters[i].length.toString() + ' MEDIUM/HIGH reports near' });
     }
   }
 
