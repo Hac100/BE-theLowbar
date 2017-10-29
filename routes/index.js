@@ -56,7 +56,7 @@ function analyseReports(dataStore) {
           for (let k = 0; k < clusters[j].length; k++) {
             if (searching) {
               if (getDistanceFromLatLonInKm(currentCluster[0]['lat'], currentCluster[0]['lon'], clusters[j][k]['lat'], clusters[j][k]['lon']) < distThresh) {
-                clusters[j].push(currentCluster);
+                clusters[j].push(currentCluster[0]);
                 currentCluster = [];
                 currentCluster.push(ds[i]);
                 searching = false;
@@ -102,13 +102,12 @@ function analyseReports(dataStore) {
   }
   clusters=newclusters;
 
-
   // apply some simple rules to clusters to generate auto alerts
   for (let i = 0; i < clusters.length; i++) {
     [meanLat, meanLon, meanTL] = getClusterStats(clusters[i]);
     if (clusters[i].length >= 3 && meanTL >= 2) {
       alerts.push({ threatlevel: meanTL, "lat": meanLat, "lon": meanLon, type: clusters[i].length.toString() + ' HIGH THREAT reports near' });
-    } else if (clusters[i].length > 5 && meanTL > 1) {
+    } else if (clusters[i].length > 5 && meanTL >= 1) {
       alerts.push({ threatlevel: meanTL, "lat": meanLat, "lon": meanLon, type: clusters[i].length.toString() + ' MEDIUM/HIGH reports near' });
     }
     else if (clusters[i].length > 10) {
@@ -129,10 +128,11 @@ function getClusterStats(cluster) {
     meanLon += +cluster[j]['lon'];
     meanTL += +threatscores[cluster[j]['threatlevel']];
   }
-  console.log(meanLat, meanLon, meanTL)
+
   meanLat /= cluster.length;
   meanLon /= cluster.length;
-  meanTL = Math.round(meanTL / cluster.length + 1);
+  meanTL = Math.round(meanTL / cluster.length );
+  console.log(meanLat, meanLon, meanTL)
   return [meanLat, meanLon, meanTL];
 }
 
