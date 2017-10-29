@@ -5,12 +5,11 @@
   <title>Document</title>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M"
     crossorigin="anonymous">
-  <!-- <meta http-equiv="refresh" content="3"> -->
+  <meta http-equiv="refresh" content="5">
   <title>
     <%= title %>
   </title>
   <link rel='stylesheet' href='/stylesheets/style.css' />
-
   <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3.exp&key=AIzaSyCcnO8mzDl1CT-3pQDVooUKsJd_OPRgA60"></script>
   <script type="text/javascript">
     function initialize() {
@@ -18,7 +17,7 @@
       var myLatLng = new google.maps.LatLng(53.477131, -2.254062);
 
       var mapOptions = {
-        zoom: 17,
+        zoom: 12,
         center: myLatLng,
         mapTypeId: 'roadmap'
       };
@@ -51,10 +50,10 @@
         bounds.extend(marker.getPosition());
       }
 
-      if (coords.length > 1) {
-        map.setOptions({ maxZoom: 18 });
-        map.fitBounds(bounds);
-      }
+      // if (coords.length > 1) {
+      //   map.setOptions({ maxZoom: 18 });
+      //   map.fitBounds(bounds);
+      // }
 
       var alerts = <%- JSON.stringify(alerts) %>;
 
