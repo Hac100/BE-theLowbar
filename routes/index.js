@@ -27,8 +27,8 @@ router.get('/', function (req, res, next) {
   res.render('index', { title: 'Lowbar: lowering the threat reporting bar', coords: coordstr, centreLat: centreLat, centreLon: centreLon, reports: req.app.locals.dataStore, alerts: alerts });
 });
 
-router.post('/reportthreat', reportThreat)
-
+router.post('/reportthreat', reportThreat);
+router.get('/resetdemo', function(req, res, next){ req.app.locals.dataStore=[]; res.status(200).send('Demo reset');});
 
 function reportThreat(req, res, next) {
   req.app.locals.dataStore.unshift(req.body); //add to front of array so most recent first
@@ -114,57 +114,102 @@ function analyseReports(dataStore) {
 
 
 
-  let searching = true;
-  let k = 1;
-  let data = ds.map(d => { return [d.lat, d.lon]; });
-  let distThresh = 0.25;
-  let clusters = [];
-  while (searching) {
-    var res = { idxs: new Array(ds.length).fill(0), centroids: [[ds.reduce((acc, d) => { return acc + d.lat }, 0) / ds.length, ds.reduce((acc, d) => { return acc + d.lon }, 0) / ds.length]] }; // Set up all as belonging to class 0
-    if (k > 1) {
-      res = skmeans(data, k);
-    }
+  // let searching = true;
+  // let k = 1;
+  // let data = ds.map(d => { return [d.lat, d.lon]; });
+  // let distThresh = 0.25;
+  // let clusters = [];
+  // while (searching) {
+  //   var res = { idxs: new Array(ds.length).fill(0), centroids: [[ds.reduce((acc, d) => { return acc + d.lat }, 0) / ds.length, ds.reduce((acc, d) => { return acc + d.lon }, 0) / ds.length]] }; // Set up all as belonging to class 0
+  //   if (k > 1) {
+  //     res = skmeans(data, k);
+  //   }
 
-    //check the distances in each cluster to neighbours - if all < distThresh we're done
-    let allInRange = true;
-    for (let c = 0; c < k; c++) {
-      if (allInRange) {
-        let inRange = true;
-        //for each cluster, check each point against all others - very point should always be within distThresh of at least one other if we're done
-        for (let i = 0; i < res.idxs.length; i++) {
-          if (inRange && res.idxs[i] === c) {
-            let thisIsCloseEnough = false;
-            if (getDistanceFromLatLonInKm(ds[i]['lat'], ds[i]['lon'], res.centroids[c][0], res.centroids[c][1]) < distThresh) {
-              thisIsCloseEnough = true;
-            }
+  //   //check the distances in each cluster to neighbours - if all < distThresh we're done
+  //   let allInRange = true;
+  //   for (let c = 0; c < k; c++) {
+  //     if (allInRange) {
+  //       let inRange = true;
+  //       //for each cluster, check each point against all others - very point should always be within distThresh of at least one other if we're done
+  //       for (let i = 0; i < res.idxs.length; i++) {
+  //         if (inRange && res.idxs[i] === c) {
+  //           let thisIsCloseEnough = false;
+  //           if (getDistanceFromLatLonInKm(ds[i]['lat'], ds[i]['lon'], res.centroids[c][0], res.centroids[c][1]) < distThresh) {
+  //             thisIsCloseEnough = true;
+  //           }
 
-            inRange = inRange && thisIsCloseEnough;
+  //           inRange = inRange && thisIsCloseEnough;
+  //         }
+  //       }
+  //       allInRange = allInRange && inRange;
+  //     }
+  //   }
+
+
+  //   if (allInRange) {
+  //     // we've found a partition that meets the criteria
+  //     searching = false;
+  //     console.log('No of clusters: ' + k)
+  //     for (let c = 0; c < k; c++) {
+  //       let cluster = [];
+  //       for (let i = 0; i < res.idxs.length; i++) {
+  //         if (res.idxs[i] === c) {
+  //           cluster.push(ds[i]);
+  //         }
+  //       }
+  //       clusters.push(cluster);
+  //     }
+  //   } else {
+  //     k++;
+  //     if (k >= data.length) searching = false;
+  //   }
+  // }
+
+
+  let maxCluster =0;
+  let distThresh=0.25;
+  for(i=ds.length-1; i>=0; i--)
+  {
+    if(!ds[i]['cluster'])
+    {
+      if(i===ds.length-1)
+      {
+        //first time clustering so assign 0
+        ds[i]['cluster']=maxCluster;
+        maxCluster++;
+      }else{
+        //check if close enough to preceding clusters
+        let minDist = 10000;
+        let bestCluster = maxCluster;
+        for(let j=ds.length-1; j>i; j--){
+          let d= getDistanceFromLatLonInKm(ds[i]['lat'], ds[i]['lon'], ds[j]['lat'], ds[j]['lon']);
+          if(d<minDist){
+            bestCluster=ds[j]['cluster'];
+            minDist=d;
           }
         }
-        allInRange = allInRange && inRange;
-      }
-    }
-
-
-    if (allInRange) {
-      // we've found a partition that meets the criteria
-      searching = false;
-      console.log('No of clusters: ' + k)
-      for (let c = 0; c < k; c++) {
-        let cluster = [];
-        for (let i = 0; i < res.idxs.length; i++) {
-          if (res.idxs[i] === c) {
-            cluster.push(ds[i]);
-          }
+        if(minDist>distThresh){
+          //start new cluster
+          ds[i]['cluster']=maxCluster;
+          maxCluster++;
+        }else{
+          //assign to best cluster
+          ds[i]['cluster']=bestCluster;
         }
-        clusters.push(cluster);
       }
-    } else {
-      k++;
-      if (k >= data.length) searching = false;
     }
   }
 
+  dataStore=ds;
+  let clusters=[];
+  for(let i=0; i<ds.length;i++)
+  {
+    if(!clusters[ds[i]['cluster']]){
+      clusters[ds[i]['cluster']]=[ds[i]];
+    }else{
+    clusters[ds[i]['cluster']].push(ds[i]);
+    }
+  }
 
   // apply some simple rules to clusters to generate auto alerts
   for (let i = 0; i < clusters.length; i++) {
