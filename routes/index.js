@@ -40,6 +40,7 @@ function analyseReports(dataStore) {
 
   if (ds.length === 0) return alerts;
 
+   
   let clusters = [];
   let clusterStart = ds[0];
   let currentCluster = [];
