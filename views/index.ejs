@@ -14,7 +14,10 @@
   <script type="text/javascript">
     function initialize() {
 
-      var myLatLng = new google.maps.LatLng(53.477131, -2.254062);
+      var coords = <%= coords %>;
+      var centreLat = <%= centreLat %>
+      var centreLon = <%= centreLon %>
+      var myLatLng = new google.maps.LatLng(centreLat, centreLon);
 
       var mapOptions = {
         zoom: 17,
@@ -24,7 +27,7 @@
       const levels = ['low', 'medium', 'high'];
       var map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
 
-      var coords = <%= coords %>;
+
       var pinImageLow = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FFFF00", new google.maps.Size(21, 34), new google.maps.Point(0, 0), new google.maps.Point(10, 34));
       var pinImageMedium = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FF8800", new google.maps.Size(21, 34), new google.maps.Point(0, 0), new google.maps.Point(10, 34));
       var pinImageHigh = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FF0000", new google.maps.Size(21, 34), new google.maps.Point(0, 0), new google.maps.Point(10, 34));
