@@ -17,7 +17,7 @@
       var myLatLng = new google.maps.LatLng(53.477131, -2.254062);
 
       var mapOptions = {
-        zoom: 12,
+        zoom: 17,
         center: myLatLng,
         mapTypeId: 'roadmap'
       };
@@ -50,10 +50,10 @@
         bounds.extend(marker.getPosition());
       }
 
-      // if (coords.length > 1) {
-      //   map.setOptions({ maxZoom: 18 });
-      //   map.fitBounds(bounds);
-      // }
+      if (coords.length > 1) {
+        map.setOptions({ maxZoom: 18 });
+        map.fitBounds(bounds);
+      }
 
       var alerts = <%- JSON.stringify(alerts) %>;
 
@@ -96,7 +96,7 @@
         if (status === 'OK') {
           if (results[0]) {
             console.log('address' + index)
-            document.getElementById('address' + index).innerHTML = results[0].formatted_address;
+            document.getElementById('address' + index).innerHTML = '<h3>'+results[0].formatted_address+'</h3><hr/>';
           }
         }
       });
@@ -122,7 +122,6 @@
             </h2>
             <div id="address<%= index %>"></div>
               <%})%>
-              <hr/>
                 <h2>Recent reports:</h2>
                 <%  reports.forEach(function(dataRow) { %>
                   <div>

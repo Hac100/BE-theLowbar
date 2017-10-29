@@ -38,7 +38,7 @@ function analyseReports(dataStore) {
   // Should really try automated clustering but for now let's take the reports in order and detect if they are close, start a new cluster if too big gap
   let ds = dataStore;
 
-  if(ds.length ===0 ) return alerts;
+  if (ds.length === 0) return alerts;
 
   let clusters = [];
   let clusterStart = ds[0];
@@ -49,34 +49,74 @@ function analyseReports(dataStore) {
     if (getDistanceFromLatLonInKm(ds[i]['lat'], ds[i]['lon'], ds[i - 1]['lat'], ds[i - 1]['lon']) < distThresh) {
       currentCluster.push(ds[i]);
     } else {
-      // if (currentCluster.length === 1) {
-      //   //if it's singleton, try to add to any cluster within distThresh (this isn't the best way to cluster of course!)
-      //   for (let j = 0; j < clusters.length; j++) {
-      //     [mnLat, mnLon] = getClusterStats(clusters[j]);
-      //     if (getDistanceFromLatLonInKm(currentCluster[0]['lat'], currentCluster[0]['lon'], mnLat, mnLon) < distThresh) {
-      //       clusters[j].push(currentCluster);
-      //       break;
-      //     }
-      //   }
-      // }
-      if(currentCluster.length>0)  clusters.push(currentCluster);
+      if (currentCluster.length === 1) {
+        //if it's singleton, try to add to any existing cluster if it's closer than distance thresh to any point
+        let searching = true;
+        for (let j = 0; j < clusters.length; j++) {
+          for (let k = 0; k < clusters[j].length; k++) {
+            if (searching) {
+              if (getDistanceFromLatLonInKm(currentCluster[0]['lat'], currentCluster[0]['lon'], clusters[j][k]['lat'], clusters[j][k]['lon']) < distThresh) {
+                clusters[j].push(currentCluster);
+                currentCluster = [];
+                currentCluster.push(ds[i]);
+                searching = false;
+              }
+            }
+          }
+        }
+        if (searching) {
+          clusters.push(currentCluster);
+          currentCluster = [];
+          currentCluster.push(ds[i]);
+        }
+      }
+      if (currentCluster.length > 1) clusters.push(currentCluster);
       currentCluster = [];
       currentCluster.push(ds[i]);
     }
   }
   if (currentCluster.length > 0) clusters.push(currentCluster);
 
-  // apply some simple rules to clusters to generate auto alerts
+  // Do another pass in case we failed to assign any singletons to near clusters
   for (let i = 0; i < clusters.length; i++) {
-    [meanLat, meanLon, meanTL] = getClusterStats(clusters[i]);
-    if (clusters[i].length >=3 && meanTL>=2) {
-      alerts.push({ threatlevel: meanTL, "lat": meanLat, "lon": meanLon, type: clusters[i].length.toString() + ' HIGH THREAT reports near' });
-    }else if (clusters[i].length > 5 && meanTL >=1) {
-      alerts.push({ threatlevel: meanTL, "lat": meanLat, "lon": meanLon, type: clusters[i].length.toString() + ' MEDIUM/HIGH reports near' });
+    if (clusters[i].length === 1) {
+      for (let j = 0; j < clusters.length; j++) {
+        if (j !== i) {
+          for (let k = 0; k < clusters[j].length; k++) {
+            if (clusters[i].length>0 && getDistanceFromLatLonInKm(clusters[i][0]['lat'], clusters[i][0]['lon'], clusters[j][k]['lat'], clusters[j][k]['lon']) < distThresh) {
+              clusters[j].push(clusters[i][0]);
+              clusters[i] = [];
+            }
+          }
+        }
+      }
     }
   }
 
-  return alerts;
+  //tidy up
+  let newclusters=[];
+  for (let i = 0; i < clusters.length; i++) {
+    if (clusters[i].length >0 ) {
+      newclusters.push(clusters[i]);
+    }
+  }
+  clusters=newclusters;
+
+
+  // apply some simple rules to clusters to generate auto alerts
+  for (let i = 0; i < clusters.length; i++) {
+    [meanLat, meanLon, meanTL] = getClusterStats(clusters[i]);
+    if (clusters[i].length >= 3 && meanTL >= 2) {
+      alerts.push({ threatlevel: meanTL, "lat": meanLat, "lon": meanLon, type: clusters[i].length.toString() + ' HIGH THREAT reports near' });
+    } else if (clusters[i].length > 5 && meanTL > 1) {
+      alerts.push({ threatlevel: meanTL, "lat": meanLat, "lon": meanLon, type: clusters[i].length.toString() + ' MEDIUM/HIGH reports near' });
+    }
+    else if (clusters[i].length > 10) {
+      alerts.push({ threatlevel: meanTL, "lat": meanLat, "lon": meanLon, type: 'Large number (' +  clusters[i].length.toString() + ') reports near' });
+    }
+  }
+
+  return alerts.sort((a,b)=>{return b.threatlevel-a.threatlevel;});
 }
 
 function getClusterStats(cluster) {
@@ -92,7 +132,7 @@ function getClusterStats(cluster) {
   console.log(meanLat, meanLon, meanTL)
   meanLat /= cluster.length;
   meanLon /= cluster.length;
-  meanTL =Math.round(meanTL / cluster.length + 1);
+  meanTL = Math.round(meanTL / cluster.length + 1);
   return [meanLat, meanLon, meanTL];
 }
 
